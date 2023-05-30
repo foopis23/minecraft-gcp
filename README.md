@@ -33,5 +33,6 @@ My main goals for this project are to:
 1. Run `./build.sh` to build applications and packages
 2. Run `./deploy.sh` to deploy the infrastructure
 3. Copy the outputted `function_uri` from the terminal.
-4. Go to the discord developer portal, navigate to your application, and under the general information tab set the `INTERACTIONS ENDPOINT URL` to the `function_uri` from the previous step.
-5. Go to https://console.cloud.google.com/run, select the `discordinteractions` service, go to security tab, and change the authentication to `Allow unauthenticated invocations`.
+4. Go to https://console.cloud.google.com/run, select the `discordinteractions` service, go to security tab, and change the authentication to `Allow unauthenticated invocations`.
+5. Go to the discord developer portal, navigate to your application, and under the general information tab set the `INTERACTIONS ENDPOINT URL` to the `function_uri` from step 3.
+
