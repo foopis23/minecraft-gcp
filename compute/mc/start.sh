@@ -26,8 +26,9 @@ cd /home/minecraft
 # TODO: check if the latest version is already downloaded
 echo "Downloading latest server.jar..."
 latest_version_number=$(node -e "fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(res=>res.json()).then(versions=>console.log(versions.latest.release))")
-if [ -f version.txt ]; then
-	if [ "$(cat version.txt)" = "$latest_version_number" ]; then
+if [ -f latest-version.txt ]; then
+	downloaded_version_number=$(cat latest-version.txt)
+	if [ "$downloaded_version_number" = "$latest_version_number" ]; then
 		echo "Already on latest version."
 	else
 		download_latest_server_jar
