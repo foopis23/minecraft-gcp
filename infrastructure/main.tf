@@ -77,6 +77,16 @@ resource "google_compute_instance_iam_binding" "discord_interaction_access" {
   depends_on = [google_service_account.discord_interactions_gcf_sa, google_compute_instance.mc_server]
 }
 
+resource "google_cloud_run_service_iam_binding" "public_access_for_interactions_endpoint" {
+  location = google_cloudfunctions2_function.discord_interactions_functions.location
+  service  = google_cloudfunctions2_function.discord_interactions_functions.name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+  depends_on = [ google_cloudfunctions2_function.discord_interactions_functions ]
+}
+
 resource "google_pubsub_topic_iam_binding" "gcf_access" {
   project = local.project
   topic   = google_pubsub_topic.minecraft-server-start.name
