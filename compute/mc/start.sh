@@ -1,9 +1,23 @@
+function download_latest_server_jar() {
+	latest_version_url=$(node -e "fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(res=>res.json()).then(versions=>fetch(versions.versions.find((version) => version.id === versions.latest.release).url)).then(res=>res.json()).then(version=>console.log(version.downloads.server.url))")
+	curl -o server.jar $latest_version_url
+	echo "$latest_version_number" > latest-version.txt
+}
+
 # install java
-apt-get install -yq openjdk-17-jdk
+if ! command -v java &> /dev/null
+then
+	apt-get update
+	apt-get install -yq openjdk-17-jdk
+fi
 
 # install nodejs
-curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-apt-get install -yq nodejs
+if ! command -v node &> /dev/null
+then
+	curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+	apt-get update
+	apt-get install -yq nodejs
+fi
 
 mkdir /home/minecraft
 cd /home/minecraft
@@ -11,8 +25,16 @@ cd /home/minecraft
 # Download latest server.jar
 # TODO: check if the latest version is already downloaded
 echo "Downloading latest server.jar..."
-latest_version_url=$(node -e "fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(res=>res.json()).then(versions=>fetch(versions.versions.find((version) => version.id === versions.latest.release).url)).then(res=>res.json()).then(version=>console.log(version.downloads.server.url))")
-curl -o server.jar $latest_version_url
+latest_version_number=$(node -e "fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(res=>res.json()).then(versions=>console.log(versions.latest.release))")
+if [ -f version.txt ]; then
+	if [ "$(cat version.txt)" = "$latest_version_number" ]; then
+		echo "Already on latest version."
+	else
+		download_latest_server_jar
+	fi
+else
+	download_latest_server_jar
+fi
 
 # TODO: setup backups job
 # TODO: setup automatic shutdown on server empty
