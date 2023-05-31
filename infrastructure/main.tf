@@ -148,6 +148,7 @@ resource "google_cloudfunctions2_function" "discord_interactions_functions" {
     max_instance_count = 1
     available_memory   = "256M"
     timeout_seconds    = 60
+    min_instance_count = 1
 
     environment_variables = {
       GCP_PROJECT_ID         = local.project,
