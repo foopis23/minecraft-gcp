@@ -4,12 +4,12 @@ locals {
 }
 
 variable "DISCORD_PUBLIC_KEY" {
-  type = string
+  type     = string
   nullable = false
 }
 
 variable "DISCORD_APPLICATION_ID" {
-  type = string
+  type     = string
   nullable = false
 }
 
@@ -45,7 +45,7 @@ data "archive_file" "discord_interactions_source" {
 }
 
 resource "google_pubsub_topic" "minecraft-server-start" {
-  name = "minecraft-server-start"
+  name    = "minecraft-server-start"
   project = local.project
 }
 
@@ -84,7 +84,7 @@ resource "google_cloud_run_service_iam_binding" "public_access_for_interactions_
   members = [
     "allUsers"
   ]
-  depends_on = [ google_cloudfunctions2_function.discord_interactions_functions ]
+  depends_on = [google_cloudfunctions2_function.discord_interactions_functions]
 }
 
 resource "google_pubsub_topic_iam_binding" "gcf_access" {
@@ -146,9 +146,9 @@ resource "google_cloudfunctions2_function" "discord_interactions_functions" {
 
   service_config {
     max_instance_count = 1
-    available_memory   = "256M"
-    timeout_seconds    = 60
     min_instance_count = 1
+    timeout_seconds    = 10
+    available_memory   = "256M"
 
     environment_variables = {
       GCP_PROJECT_ID         = local.project,
@@ -183,7 +183,7 @@ resource "google_cloudfunctions2_function" "start_server" {
   service_config {
     max_instance_count = 1
     available_memory   = "256M"
-    timeout_seconds    = 60
+    timeout_seconds    = 30
 
     environment_variables = {
       GCP_PROJECT_ID         = local.project,
@@ -194,17 +194,15 @@ resource "google_cloudfunctions2_function" "start_server" {
       DISCORD_APPLICATION_ID = var.DISCORD_APPLICATION_ID
     }
 
-    ingress_settings = "ALLOW_INTERNAL_ONLY"
-    all_traffic_on_latest_revision = true
-
+    ingress_settings               = "ALLOW_INTERNAL_ONLY"
     service_account_email = google_service_account.discord_interactions_gcf_sa.email
   }
 
   event_trigger {
     trigger_region = local.region
-    event_type = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic = google_pubsub_topic.minecraft-server-start.id
-    retry_policy = "RETRY_POLICY_DO_NOT_RETRY"
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.minecraft-server-start.id
+    retry_policy   = "RETRY_POLICY_DO_NOT_RETRY"
   }
 
   depends_on = [google_compute_instance.mc_server, google_pubsub_topic.minecraft-server-start, google_pubsub_topic_iam_binding.gcf_access]
