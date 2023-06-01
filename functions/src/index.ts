@@ -132,16 +132,34 @@ functions.cloudEvent<{ message: { data: string } }>('minecraft-server-start', as
 		}
 	}
 
+	const content = `VM Started with IP: \`${ip}\`! Minecraft Server is starting now (this may take a couple of minutes...)`;
+
 	// send follow up
-	const followUpResponse = await fetch(`https://discord.com/api/v9/webhooks/${env.DISCORD_APPLICATION_ID}/${interactionToken}`, {
+	let followUpResponse = await fetch(`https://discord.com/api/v9/webhooks/${env.DISCORD_APPLICATION_ID}/${interactionToken}`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
-			content: `Minecraft Server Started! Connect with \`${ip}\``,
+			content
 		})
 	});
+
+	if (followUpResponse.status === 429) {
+		const body = await followUpResponse.json();
+		const retryAfter = body.retry_after;
+		await new Promise(resolve => setTimeout(resolve, retryAfter));
+
+		followUpResponse = await fetch(`https://discord.com/api/v9/webhooks/${env.DISCORD_APPLICATION_ID}/${interactionToken}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				content
+			})
+		});
+	}
 
 	if (!followUpResponse.ok) {
 		throw new Error(`Failed to send follow up message: ${followUpResponse.status} ${followUpResponse.statusText}\n${await followUpResponse.text()}`)
